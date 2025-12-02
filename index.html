@@ -2,576 +2,579 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Binance Futures Positions</title>
-  <!-- Binance Plex Webfont -->
-  <link
-    href="https://db.onlinewebfonts.com/c/d05c19ccecf7003d248c60ffd6b5e8f7?family=Binance+PLEX"
-    rel="stylesheet"
-  />
-  <!-- Font Awesome -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deriv Under-Only Auto Trading Tool</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    :root {
-      --panel-bg: #1e2127;
-      --secondary-bg: #32383e;
-      --btn-bg: #2f3339;
-      --text-primary: #ffffff;
-      --text-secondary: #7c828a;
-      --text-green: #3acf87;
-      --text-red: #e04b4a;
-      --highlight: #f0b90b;
-    }
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: var(--panel-bg);
-      color: #b0b0b0;
-      font-family: 'Binance PLEX', sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      max-width: 430px;
-      margin: 0 auto;
-    }
-
-    .header-wrapper {
-      display: flex;
-      justify-content: center;
-      margin-top: 12px;
-      margin-bottom: 4px;
-      background: var(--panel-bg);
-    }
-    .header-toggle {
-      display: flex;
-      background: var(--panel-bg);
-      border-radius: 6px;
-      overflow: hidden;
-      width: 180px;
-      height: 28px;
-    }
-    .header-toggle button {
-      flex: 1;
-      padding: 4px 6px;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      font-size: 11px;
-      cursor: pointer;
-    }
-    .header-toggle .active {
-      background: var(--secondary-bg);
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    /* shift nav & toggles 0.1cm right */
-    nav.main-nav,
-    .sub-toggle,
-    .section-toggle {
-      transform: translateX(0.1cm);
-    }
-
-    nav.main-nav {
-      display: flex;
-      margin: 0 12px;
-      background: var(--panel-bg);
-      padding: 4px 0;
-    }
-    nav.main-nav a {
-      margin-right: 16px;
-      text-decoration: none;
-      color: var(--text-secondary);
-      font-size: 13px;
-      padding: 8px 0;
-      position: relative;
-      white-space: nowrap;
-    }
-    nav.main-nav a.active {
-      font-weight: 500;
-    }
-    nav.main-nav a[href="#futures"] {
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    .sub-toggle {
-      display: flex;
-      margin: 8px 12px;
-      background: var(--panel-bg);
-      padding: 4px;
-      border-radius: 4px;
-    }
-    .sub-toggle button {
-      margin-right: 8px;
-      padding: 5px 10px;
-      background: var(--panel-bg);
-      border: none;
-      border-radius: 4px;
-      color: var(--text-secondary);
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .sub-toggle .active {
-      background: var(--secondary-bg);
-      color: var(--text-primary);
-    }
-
-    .section-toggle {
-      display: flex;
-      margin: 12px;
-      background: var(--panel-bg);
-      padding: 4px;
-      border-radius: 4px;
-    }
-    .section-toggle div {
-      margin-right: 16px;
-      cursor: pointer;
-      font-size: 13px;
-      position: relative;
-      color: var(--text-secondary);
-    }
-    .section-toggle .active {
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-    .section-toggle .active::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 20px;
-      height: 2px;
-      background: var(--highlight);
-    }
-
-    .feed {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 12px;
-      margin-bottom: 4px;
-      background: var(--panel-bg);
-    }
-    .feed::-webkit-scrollbar {
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: linear-gradient(145deg, #2c003e, #0a1f2d); color: #f0f0f0; }
+    #alarmDisplay {
       display: none;
-    }
-
-    .trade-panel {
-      background: var(--panel-bg);
-      padding: 12px;
-      border-radius: 8px;
-      transition: transform 0.5s ease;
-    }
-    .trade-panel .header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .icon-buy {
-      background: var(--text-green);
+      position: fixed;
+      top: 0; left: 0; width: 100%;
+      background: #ff3333;
       color: #fff;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
-      margin-right: 8px;
-    }
-    .symbol {
-      font-size: 14px;
-      font-weight: 500;
-      margin-right: 6px;
-      color: var(--text-primary);
-    }
-    .tag {
-      background: var(--secondary-bg);
-      color: var(--text-secondary);
-      font-size: 10px;
-      padding: 1px 4px;
-      margin-right: 4px;
-      text-transform: uppercase;
-    }
-    .exclamations {
-      display: flex;
-      margin-left: 6px;
-    }
-    .exclamations span {
-      position: relative;
-      width: 2px;
-      height: 10px;
-      background: var(--secondary-bg);
-      margin: 0 1px;
-      border-radius: 1px;
-      transition: background 0.3s ease;
-    }
-    .exclamations span::after {
-      content: '';
-      position: absolute;
-      bottom: -3px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 2px;
-      background: inherit;
-      border-radius: 50%;
-    }
-    .exclamations span.green,
-    .exclamations span.green::after {
-      background: var(--text-green);
-    }
-    .share {
-      margin-left: auto;
-      color: var(--text-secondary);
+      text-align: center;
+      padding: 10px;
       font-size: 16px;
-      cursor: pointer;
+      z-index: 1000;
+      animation: flash 1s infinite;
     }
+    @keyframes flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    #deriv-login { display: flex; justify-content: center; align-items: center; height: 100vh; background: rgba(255,255,255,0.02); }
+    #deriv-login button { padding: 14px 28px; background: #00c3ff; color: #fff; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; box-shadow: 0 0 12px #00c3ff, 0 0 24px #00c3ff; }
+    #deriv-tool { display: none; padding: 30px; }
+    h1 { text-align: center; font-size: 30px; margin-bottom: 30px; color: #84ffb4; text-shadow: 0 0 6px #0ff; }
+    .container { display: flex; flex-wrap: wrap; gap: 25px; }
+    .left-panel, .right-panel { flex: 1; min-width: 300px; }
+    .box { background: rgba(255,255,255,0.06); backdrop-filter: blur(12px); border-radius: 14px; padding: 20px; margin-bottom: 25px; box-shadow: 0 0 14px rgba(0,255,255,0.15); }
+    #liveQuote { font-size: 26px; margin-bottom: 14px; color: #00ffe0; text-align: center; }
+    #ldpIndicator { font-size: 72px; font-weight: bold; text-align: center; padding: 20px; background: #111; border-radius: 16px; margin: auto; transition: transform 0.3s ease; box-shadow: inset 0 0 20px #3ef2ff; }
+    label { font-size: 14px; margin-top: 10px; display: block; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; border-radius: 8px; border: none; background: #292929; color: #fff; }
+    button { padding: 12px; margin-top: 14px; border-radius: 10px; border: none; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%; }
+    #underBtn { background: #ff9757; color: #000; box-shadow: 0 0 14px #ff9757; }
+    #resumeBtn { background: #aaff77; color: #000; display: none; }
+    #signalStrength { font-size: 18px; margin-top: 16px; color: #ffee00; font-weight: 600; text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    th, td { padding: 8px; border-bottom: 1px solid #444; text-align: center; }
+    .win { background: #083f0c; color: #0f0; }
+    .loss { background: #470000; color: #f66; }
+    #pauseStatus { font-size: 15px; color: #ffcc00; text-align: center; margin-top: 10px; }
+    .switch-box { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 12px; }
+    @keyframes scrollUp { 0% { transform: translateY(100%); } 100% { transform: translateY(-100%); } }
+    #volStats { animation: scrollUp 25s linear infinite; }
+    #volStats div { font-size: 13px; padding: 4px; border-bottom: 1px dashed #444; }
 
-    .content-columns {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      margin-bottom: 8px;
+    /* Market Signal Monitor UI */
+    .markets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
     }
-    .column {
-      display: flex;
-      flex-direction: column;
+    .market-box {
+      background: rgba(0,0,0,0.45);
+      border-radius: 10px;
+      padding: 8px 6px;
+      text-align: center;
+      border: 1px solid #555;
+      font-size: 13px;
+      transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     }
-    .column.right {
-      text-align: right;
+    .market-box .symbol {
+      font-weight: 600;
+      margin-bottom: 2px;
     }
-    .stat {
-      margin-bottom: 8px;
+    .market-box .last-digit {
+      font-size: 20px;
+      margin-top: 4px;
     }
-    .label {
-      font-size: 12px;
-      color: var(--text-secondary);
-      border-bottom: 1px dotted var(--text-secondary);
-      padding-bottom: 2px;
-      display: inline-block;
+    .market-box .signal-flag {
+      margin-top: 4px;
+      font-size: 11px;
     }
-    .label.no-line {
-      border-bottom: none;
+    .market-box.has-signal {
+      background: #5a0000;
+      border-color: #ff4444;
+      box-shadow: 0 0 15px rgba(255,68,68,0.85);
+      transform: translateY(-2px);
     }
-    .value {
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--text-primary);
-      transition: all 0.3s ease;
-    }
-    .value.green,
-    .value.percent.green {
-      color: var(--text-green);
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .value.red,
-    .value.percent.red {
-      color: var(--text-red);
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .margin-ratio-value {
-      font-size: 12px !important;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: space-between;
-    }
-    .btn {
-      flex: 1;
-      background: var(--btn-bg);
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 6px 0;
-      font-size: 12px;
-      cursor: pointer;
-      margin: 0 4px;
-      transition: background 0.3s;
-    }
-    .btn:hover {
-      background: var(--secondary-bg);
+    .signal-row {
+      background: #331111;
+      color: #ffdddd;
     }
   </style>
 </head>
 <body>
-  <!-- Centered Toggle -->
-  <div class="header-wrapper">
-    <div class="header-toggle">
-      <button class="active">Exchange</button>
-      <button>Wallet</button>
+  <div id="alarmDisplay"></div>
+  <div id="deriv-login">
+    <button id="loginBtn">Login with Deriv</button>
+  </div>
+  <div id="deriv-tool">
+    <h1>📊 Under-Only Auto Trading Tool</h1>
+    <div class="container">
+      <div class="left-panel">
+        <div class="box">
+          <div id="liveQuote">Quote: -</div>
+          <div id="ldpIndicator">0</div>
+          <div id="signalStrength">Waiting for Signal...</div>
+          <canvas id="percentChart" width="400" height="180" style="margin-top:20px;"></canvas>
+          <div id="pauseStatus"></div>
+          <button id="resumeBtn">🟢 Resume Now</button>
+        </div>
+        <div class="box">
+          <h3>Signal + Trade History</h3>
+          <table>
+            <thead><tr><th>Time</th><th>Signal</th><th>Stake</th><th>Status</th></tr></thead>
+            <tbody id="tradeHistory"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="right-panel">
+        <label for="marketSelect">Market:</label>
+        <select id="marketSelect"></select>
+        <label for="duration">Duration (ticks):</label>
+        <select id="duration"></select>
+        <label for="stake">Stake:</label>
+        <input type="number" id="stake" step="0.01" value="0.65" />
+        <label for="barrier">Barrier (0–9):</label>
+        <input type="number" id="barrier" min="0" max="9" value="7" />
+        <button id="underBtn">Under</button>
+        <div class="switch-box">
+          <label>Auto Trade:</label><input type="checkbox" id="autoToggle" />
+        </div>
+        <div style="margin-top:10px;">
+          ID: <span id="loginId">-</span><br>
+          Balance: <span id="balance">-</span> USD&nbsp;&nbsp;Profit: <span id="profit">0.00</span> USD
+        </div>
+        <div class="box" style="max-height:180px;overflow:hidden;position:relative;">
+          <h3>📈 Volatility Market Stats</h3>
+          <div id="volStats"></div>
+        </div>
+        <div class="box">
+          <h3>📡 Market Signal Monitor</h3>
+          <div id="marketsGrid" class="markets-grid"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Main Navigation -->
-  <nav class="main-nav">
-    <a href="#" class="active">Overview</a>
-    <a href="#">Funding</a>
-    <a href="#futures">Futures</a>
-    <a href="#">Spot</a>
-  </nav>
-
-  <!-- Sub Toggle -->
-  <div class="sub-toggle">
-    <button class="active">USDⓈ-M</button>
-    <button>COIN-M</button>
-  </div>
-
-  <!-- Section Toggle -->
-  <div class="section-toggle">
-    <div class="active">Positions</div>
-    <div>Assets</div>
-  </div>
-
-  <!-- Profit Feed Container -->
-  <div class="feed"></div>
+  <!-- main signal sound -->
+  <audio id="voiceUnder" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" preload="auto" autoplay></audio>
+  <!-- market change sound -->
+  <audio id="marketChangeSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
 
   <script>
-    // per-symbol decimal precision map
-    const symbolPrecisions = {
-      BTCUSDT: 2, ETHUSDT: 2, BNBUSDT: 2, ADAUSDT: 3,
-      SOLUSDT: 3, XRPUSDT: 4, DOTUSDT: 3, LTCUSDT: 2,
-      LINKUSDT: 3, DOGEUSDT: 4, UNIUSDT: 3, BCHUSDT: 2,
-      XLMUSDT: 4, ATOMUSDT: 3, MATICUSDT: 4, AVAXUSDT: 3,
-      TRXUSDT: 4, EOSUSDT: 3, NEARUSDT: 3, FILUSDT: 3
-    };
-    function getPrecision(sym) {
-      return symbolPrecisions[sym] ?? 2;
-    }
-    function formatNumber(sym, x) {
-      const p = getPrecision(sym);
-      const s = x.toFixed(p);
-      const [intPart, decPart] = s.split('.');
-      const intFmt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      return decPart !== undefined ? `${intFmt}.${decPart}` : intFmt;
+    const APP_ID = '82610';
+    const REDIRECT_URI = location.origin + location.pathname;
+    const OAUTH_URL = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+    const tokenParam = new URLSearchParams(location.search).get('token1');
+    const acctParam  = new URLSearchParams(location.search).get('acct1');
+
+    if (tokenParam && acctParam) {
+      localStorage.setItem('deriv_token', tokenParam);
+      localStorage.setItem('deriv_loginid', acctParam);
+      location.href = REDIRECT_URI;
     }
 
-    const maintenanceMarginRates = {
-      BTCUSDT: 0.004, ETHUSDT: 0.005, BNBUSDT: 0.005, ADAUSDT: 0.01,
-      SOLUSDT: 0.008, XRPUSDT: 0.01, DOTUSDT: 0.01, LTCUSDT: 0.01,
-      LINKUSDT: 0.01, DOGEUSDT: 0.012, UNIUSDT: 0.01, BCHUSDT: 0.01,
-      XLMUSDT: 0.015, ATOMUSDT: 0.01, MATICUSDT: 0.01, AVAXUSDT: 0.01,
-      TRXUSDT: 0.02, EOSUSDT: 0.015, NEARUSDT: 0.02, FILUSDT: 0.015
-    };
-    function getMaintRate(sym) { return maintenanceMarginRates[sym] || 0.005; }
+    const TOKEN = localStorage.getItem('deriv_token');
+    let initialBalance = 0, currentBalance = 0;
 
-    // settings
-    const symbols         = Object.keys(symbolPrecisions);
-    const allowedLeverages = [10, 15, 20, 50];
-    const minPercent      = 100;   // ROI minimum 100%
-    const maxPercent      = 1800;  // ROI maximum 1800%
-    const maxLossPercent  = 200;   // Losses capped to 200%
-    const minMargin       = 50;    // USDT
-    const maxMargin       = 1000;  // USDT
-    const updateInterval  = 2000;  // ms between updates
-    const maxDeltaPct     = 1;     // ±1% jitter per update
-    const driftPerUpdate  = 0.0001;
+    if (!TOKEN) {
+      document.getElementById('loginBtn').onclick = () => window.location = OAUTH_URL;
+    } else {
+      document.getElementById('deriv-login').style.display = 'none';
+      document.getElementById('deriv-tool').style.display = 'block';
+      initTool();
+    }
 
-    // exactly 20 trades, 2 random non-adjacent losers
-    const totalCount = 20;
-    function pickLosers(count, total) {
-      const losers = [];
-      while (losers.length < count) {
-        const idx = Math.floor(Math.random() * total);
-        if (losers.includes(idx)) continue;
-        // ensure no adjacent losses
-        if (losers.some(x => Math.abs(x - idx) === 1)) continue;
-        losers.push(idx);
+    function initTool() {
+      // Markets: R10, R25, R75, R100 (R50 removed)
+      const markets = ['R_10','R_25','R_75','R_100'];
+      const marketSelect = document.getElementById('marketSelect');
+      markets.forEach(m => marketSelect.add(new Option(m, m)));
+
+      for (let i = 1; i <= 10; i++) {
+        document.getElementById('duration').add(new Option(`${i} ticks`, `${i}t`));
       }
-      return losers;
-    }
 
-    async function initTrades() {
-      try {
-        const res  = await fetch('https://api.binance.com/api/v3/ticker/price');
-        const data = await res.json();
-        const priceMap = Object.fromEntries(data.map(d => [d.symbol, parseFloat(d.price)]));
+      const volStatsData = {};
+      const marketsGrid = document.getElementById('marketsGrid');
+      const marketStates = {};
 
-        const feedDiv  = document.querySelector('.feed');
-        const loseIdxs = pickLosers(2, totalCount);
-        const trades   = [];
-
-        for (let i = 0; i < totalCount; i++) {
-          const sym    = symbols[i % symbols.length];
-          const price  = priceMap[sym] || 0;
-          const isLoss = loseIdxs.includes(i);
-
-          const entryPrice  = price * 0.94;
-          const initialMark = price * 0.98;
-          const leverage    = allowedLeverages[Math.floor(Math.random() * allowedLeverages.length)];
-          const margin      = Math.random() * (maxMargin - minMargin) + minMargin;
-
-          // choose ROI
-          let rawPct = isLoss
-            ? Math.random() * (maxLossPercent - minPercent) + minPercent
-            : Math.random() * (maxPercent - minPercent)    + minPercent;
-
-          // compute PNL
-          let pnl = margin * rawPct / 100 * (isLoss ? -1 : 1);
-          const minPnL = margin * minPercent / 100;
-          const maxPnL = margin * maxPercent / 100;
-          pnl = isLoss
-            ? -Math.min(maxPnL, Math.max(minPnL, -pnl))
-            :  Math.min(maxPnL, Math.max(minPnL,  pnl));
-
-          const liqPrice    = entryPrice * (1 - 1 / leverage);
-          const notional    = margin * leverage;
-          const maintenance = notional * getMaintRate(sym);
-          const equity      = margin + pnl;
-          const mRatio      = maintenance / equity * 100;
-
-          const panel = document.createElement('div');
-          panel.className = 'trade-panel';
-          panel.innerHTML = `
-            <div class="header">
-              <span class="icon-buy">B</span>
-              <span class="symbol">${sym}</span>
-              <span class="tag">PERP</span>
-              <span class="tag">Cross ${leverage}×</span>
-              <span class="exclamations">
-                ${(() => {
-                  let html = '';
-                  const totalBars = 4;
-                  const greenBars = Math.floor(Math.random() * totalBars) + 1;
-                  for (let j = 0; j < totalBars; j++) {
-                    html += `<span class="${j < greenBars ? 'green' : ''}"></span>`;
-                  }
-                  return html;
-                })()}
-              </span>
-              <i class="fas fa-share-alt share"></i>
-            </div>
-            <div class="content-columns">
-              <div class="column">
-                <div class="stat">
-                  <div class="label">PNL (USDT)</div>
-                  <div class="value ${pnl < 0 ? 'red' : 'green'}">
-                    ${formatNumber(sym, pnl)}
-                  </div>
-                </div>
-                <div class="stat">
-                  <div class="label">Size (USDT)</div>
-                  <div class="value">
-                    ${formatNumber(sym, notional)}
-                  </div>
-                </div>
-                <div class="stat">
-                  <div class="label">Entry Price (USDT)</div>
-                  <div class="value">
-                    ${formatNumber(sym, entryPrice)}
-                  </div>
-                </div>
-              </div>
-              <div class="column center">
-                <div class="stat">
-                  <div class="label no-line">Margin (USDT)</div>
-                  <div class="value">
-                    ${formatNumber(sym, margin)}
-                  </div>
-                </div>
-                <div class="stat">
-                  <div class="label no-line">Mark Price (USDT)</div>
-                  <div class="value">
-                    ${formatNumber(sym, initialMark)}
-                  </div>
-                </div>
-              </div>
-              <div class="column right">
-                <div class="stat">
-                  <div class="label">ROI</div>
-                  <div class="value percent ${pnl < 0 ? 'red' : 'green'}">
-                    ${(pnl >= 0 ? '+' : '') + rawPct.toFixed(2)}%
-                  </div>
-                </div>
-                <div class="stat margin-ratio">
-                  <div class="label">Margin Ratio</div>
-                  <div class="value percent margin-ratio-value ${mRatio >= 80 ? 'red' : 'green'}">
-                    ${mRatio.toFixed(2)}%
-                  </div>
-                </div>
-                <div class="stat">
-                  <div class="label no-line">Liq. Price (USDT)</div>
-                  <div class="value">
-                    ${formatNumber(sym, liqPrice)}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="actions">
-              <button class="btn">Leverage</button>
-              <button class="btn">TP/SL</button>
-              <button class="btn">Close</button>
-              <button class="btn">Reverse</button>
-            </div>
+      // market boxes + state (for all markets view)
+      markets.forEach(symbol => {
+        marketStates[symbol] = {
+          consecutiveInRange: 0, // digits 0–5 in a row
+          hasSignal: false,
+          lastDigit: null
+        };
+        if (marketsGrid) {
+          const box = document.createElement('div');
+          box.className = 'market-box';
+          box.dataset.symbol = symbol;
+          box.innerHTML = `
+            <div class="symbol">${symbol}</div>
+            <div class="last-digit">-</div>
+            <div class="signal-flag"></div>
           `;
-          feedDiv.appendChild(panel);
-          trades.push({ panel, sym, margin, entryPrice, leverage, currentMark: initialMark, rawPct });
+          marketsGrid.appendChild(box);
+        }
+      });
+
+      // decimal format + last digit (after decimal) handling
+      function formatPriceAndDigit(symbolFull, quote) {
+        const base = symbolFull.replace('_1s', '');
+        const rawStr = quote.toFixed(5); // raw 5 decimals
+        const parts = rawStr.split('.');
+        const intPart = parts[0];
+        const decPart = parts[1] || '';
+        let wanted;
+        if (base === 'R_75') {
+          wanted = 4;   // R75 -> decimal +1 digit
+        } else if (base === 'R_100') {
+          wanted = 2;   // R100 -> decimal -1 digit
+        } else {
+          wanted = 3;   // default -> 3 decimals (remove 2)
+        }
+        const trimmed = decPart.slice(0, wanted);
+        const display = trimmed ? `${intPart}.${trimmed}` : intPart;
+        const lastDigit = trimmed ? parseInt(trimmed[trimmed.length - 1], 10) : null;
+        return { display, lastDigit };
+      }
+
+      function renderVolStats() {
+        const html = Object.entries(volStatsData)
+          .map(([s, q]) => {
+            const { display } = formatPriceAndDigit(s, q);
+            return `<div>${s}: ${display}</div>`;
+          })
+          .join('');
+        document.getElementById('volStats').innerHTML = html;
+      }
+
+      const ws = new WebSocket(`wss://ws.binaryws.com/websockets/v3?app_id=${APP_ID}`);
+      let digitCounts = Array(10).fill(0);
+      let activeTrade = false;
+
+      const percentChart = new Chart(
+        document.getElementById('percentChart').getContext('2d'),
+        {
+          type: 'doughnut',
+          data: {
+            labels: [...Array(10).keys()].map(n => `Digit ${n}`),
+            datasets: [{ data: digitCounts, borderWidth: 1 }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: '#fff' } }
+            }
+          }
+        }
+      );
+
+      const martingalePlan = [
+        { stake: 0.65, digit: 7 },
+        { stake: 1.03, digit: 6 },
+        { stake: 2.65, digit: 6 },
+        { stake: 4.54, digit: 5 },
+        { stake: 6.95, digit: 5 },
+        { stake: 9.21, digit: 5 },
+        { stake: 11.55, digit: 5 },
+        { stake: 13.75, digit: 5 },
+        { stake: 14.55, digit: 5 },
+        { stake: 15.35, digit: 5 }
+      ];
+
+      let currentStep = 0,
+          consecutiveLosses = 0,
+          consecutiveWins = 0,
+          pauseUntil = null,
+          thresholdPauseUntil = null,
+          profitReached = false,
+          lossReached = false;
+
+      function shouldPause() {
+        const now = Date.now();
+        return (pauseUntil && now < pauseUntil) || (thresholdPauseUntil && now < thresholdPauseUntil);
+      }
+
+      function setPause(mins) {
+        pauseUntil = Date.now() + mins * 60000;
+        document.getElementById('resumeBtn').style.display = 'inline-block';
+      }
+
+      function hold24h() {
+        thresholdPauseUntil = Date.now() + 24 * 60 * 60000;
+        document.getElementById('underBtn').disabled = true;
+        document.getElementById('alarmDisplay').style.display = 'block';
+      }
+
+      function showPauseCountdown() {
+        const el = document.getElementById('pauseStatus');
+        const now = Date.now();
+
+        if (thresholdPauseUntil) {
+          const left = thresholdPauseUntil - now;
+          if (left > 0) {
+            const h = Math.floor(left / 3600000);
+            const m = Math.floor((left % 3600000) / 60000);
+            const s = Math.floor((left % 60000) / 1000);
+            el.textContent = `⏸ Hold until ${h}h ${m}m ${s}s`;
+            return;
+          } else {
+            thresholdPauseUntil = null;
+            document.getElementById('underBtn').disabled = false;
+            document.getElementById('alarmDisplay').style.display = 'none';
+            el.textContent = '✅ Resumed after 24h';
+            setTimeout(() => (el.textContent = ''), 3000);
+            initialBalance = currentBalance;
+            profitReached = false;
+            lossReached = false;
+          }
         }
 
-        // update loop
-        setInterval(() => {
-          trades.forEach(t => {
-            const vals  = t.panel.querySelectorAll('.value');
-            const roiEl = t.panel.querySelector('.value.percent');
-            const sign  = parseFloat(roiEl.textContent) >= 0 ? 1 : -1;
-            let pct      = Math.abs(parseFloat(roiEl.textContent));
-            pct         += (Math.random() * 2 - 1) * maxDeltaPct;
-            pct         = Math.max(minPercent, Math.min(maxPercent, pct));
-            let pnl      = t.margin * pct / 100 * sign;
-            const minP   = t.margin * minPercent / 100;
-            const maxP   = t.margin * maxPercent / 100;
-            pnl         = sign > 0
-              ? Math.min(maxP, Math.max(minP, pnl))
-              : -Math.min(maxP, Math.max(minP, -pnl));
-
-            t.currentMark *= 1 + driftPerUpdate;
-            const markP   = t.currentMark;
-            const liqP    = t.entryPrice * (1 - 1 / t.leverage);
-            const notional= t.margin * t.leverage;
-            const maintenance = notional * getMaintRate(t.sym);
-            const equity  = t.margin + pnl;
-            const mRatio  = maintenance / equity * 100;
-
-            // update PNL with commas
-            vals[0].textContent = formatNumber(t.sym, pnl);
-            vals[0].classList.toggle('green', pnl >= 0);
-            vals[0].classList.toggle('red', pnl < 0);
-
-            // update Mark Price
-            vals[4].textContent = formatNumber(t.sym, markP);
-
-            // update ROI
-            roiEl.textContent = (pnl >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-            roiEl.classList.toggle('green', pnl >= 0);
-            roiEl.classList.toggle('red', pnl < 0);
-
-            // update Margin Ratio
-            vals[6].textContent = mRatio.toFixed(2) + '%';
-            vals[6].classList.toggle('green', mRatio < 80);
-            vals[6].classList.toggle('red', mRatio >= 80);
-
-            // update Liq. Price
-            vals[7].textContent = formatNumber(t.sym, liqP);
-          });
-        }, updateInterval);
-
-      } catch (err) {
-        console.error('Failed to fetch Binance prices:', err);
+        if (pauseUntil) {
+          const left2 = pauseUntil - now;
+          if (left2 > 0) {
+            const mins = Math.floor(left2 / 60000);
+            const secs = Math.floor((left2 % 60000) / 1000);
+            el.textContent = `⏸ Paused (${mins}m ${secs}s)`;
+          } else {
+            pauseUntil = null;
+            el.textContent = '✅ Auto resumed.';
+            setTimeout(() => (el.textContent = ''), 3000);
+          }
+        }
       }
-    }
 
-    initTrades();
+      setInterval(showPauseCountdown, 1000);
+
+      document.getElementById('resumeBtn').onclick = () => {
+        pauseUntil = null;
+        document.getElementById('resumeBtn').style.display = 'none';
+        const el = document.getElementById('pauseStatus');
+        el.textContent = '✅ Manually resumed.';
+        setTimeout(() => (el.textContent = ''), 3000);
+      };
+
+      function updateMartingale(win) {
+        if (win) {
+          currentStep = 0;
+          consecutiveLosses = 0;
+          consecutiveWins++;
+          if (consecutiveWins >= 2) {
+            setPause(5);
+            consecutiveWins = 0;
+          }
+        } else {
+          consecutiveWins = 0;
+          consecutiveLosses++;
+          currentStep = Math.min(currentStep + 1, martingalePlan.length - 1);
+          const pm = { 2: 2, 3: 5, 4: 10, 5: 20, 6: 30, 7: 40, 8: 60 };
+          if (pm[consecutiveLosses]) setPause(pm[consecutiveLosses]);
+          const mEl = document.getElementById('marketSelect');
+          mEl.selectedIndex = (mEl.selectedIndex + 1) % mEl.options.length;
+        }
+        const plan = martingalePlan[currentStep];
+        document.getElementById('stake').value = plan.stake;
+        document.getElementById('barrier').value = plan.digit;
+      }
+
+      function placeTrade(type) {
+        if (activeTrade || shouldPause()) return;
+        const stake = +document.getElementById('stake').value;
+        const dur = +document.getElementById('duration').value.replace('t', '');
+        const barrier = document.getElementById('barrier').value;
+        ws.send(JSON.stringify({
+          buy: 1,
+          price: stake,
+          parameters: {
+            amount: stake,
+            basis: 'stake',
+            contract_type: type,
+            currency: 'USD',
+            duration: dur,
+            duration_unit: 't',
+            symbol: document.getElementById('marketSelect').value,
+            barrier
+          }
+        }));
+        activeTrade = true;
+      }
+
+      function triggerSignal(symbol, count, lastDigit) {
+        const time = new Date().toLocaleTimeString();
+        const message = `Signal (${symbol}) - last digit 0–5 for ${count} ticks (last: ${lastDigit})`;
+        document.getElementById('signalStrength').textContent = message;
+
+        // signal history row (නොමැකෙන history)
+        const row = document.createElement('tr');
+        row.className = 'signal-row';
+        row.innerHTML = `<td>${time}</td><td>${message}</td><td>-</td><td>SIGNAL</td>`;
+        document.getElementById('tradeHistory').prepend(row);
+
+        // signal sound
+        const audio = document.getElementById('voiceUnder');
+        if (audio) audio.play();
+
+        // signal ඇති market box එක රතු වර්ණයෙන් highlight
+        const box = document.querySelector(`.market-box[data-symbol="${symbol}"]`);
+        if (box) {
+          box.classList.add('has-signal');
+          const flag = box.querySelector('.signal-flag');
+          if (flag) flag.textContent = 'SIGNAL';
+        }
+
+        // 🆕 Signal ලැබුණු market එකට අනුව උඩ තියෙන selected market එක change කරන්න
+        const select = document.getElementById('marketSelect');
+        if (select) {
+          for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === symbol) {
+              select.selectedIndex = i;
+              break;
+            }
+          }
+        }
+
+        // ✅ Auto icon ට tick තියෙනවානම්, signal එකට අනුව DIGITUNDER trade එක auto open කරන්න
+        if (
+          document.getElementById('autoToggle').checked &&
+          document.getElementById('marketSelect').value === symbol &&
+          !shouldPause() &&
+          !activeTrade
+        ) {
+          placeTrade('DIGITUNDER');
+        }
+      }
+
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ authorize: TOKEN }));
+      };
+
+      ws.onmessage = ({ data }) => {
+        const msg = JSON.parse(data);
+
+        if (msg.authorize) {
+          document.getElementById('loginId').innerText = msg.authorize.loginid;
+          initialBalance = +msg.authorize.balance;
+          currentBalance = initialBalance;
+          document.getElementById('balance').innerText = currentBalance.toFixed(2);
+          document.getElementById('profit').innerText = '0.00';
+
+          // subscribe (no R_50 / R_50_1s)
+          ['R_10','R_25','R_75','R_100','R_10_1s','R_25_1s','R_75_1s','R_100_1s']
+            .forEach(s => ws.send(JSON.stringify({ ticks: s, subscribe: 1 })));
+
+          ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+          return;
+        }
+
+        if (msg.balance) {
+          currentBalance = +msg.balance.balance;
+          document.getElementById('balance').innerText = currentBalance.toFixed(2);
+          const profit = currentBalance - initialBalance;
+          document.getElementById('profit').innerText = profit.toFixed(2);
+
+          if (!profitReached && profit / initialBalance >= 0.05) {
+            profitReached = true;
+            document.getElementById('alarmDisplay').textContent = 'You have earned 5% for today.';
+            hold24h();
+            document.getElementById('voiceUnder').play();
+          }
+          if (!lossReached && profit / initialBalance <= -0.25) {
+            lossReached = true;
+            document.getElementById('alarmDisplay').textContent = "Don't trade today.";
+            hold24h();
+            document.getElementById('voiceUnder').play();
+          }
+          return;
+        }
+
+        if (msg.tick) {
+          const symbolFull = msg.tick.symbol;   // e.g. R_10, R_10_1s
+          const base = symbolFull.replace('_1s','');
+
+          volStatsData[symbolFull] = msg.tick.quote;
+          renderVolStats();
+
+          const { display, lastDigit } = formatPriceAndDigit(symbolFull, msg.tick.quote);
+
+          // per-market signal tracking (0–5 last digit, 7 වරක් in a row)
+          if (marketStates[base]) {
+            const st = marketStates[base];
+            st.lastDigit = lastDigit;
+
+            const box = document.querySelector(`.market-box[data-symbol="${base}"]`);
+            if (box) {
+              const ld = box.querySelector('.last-digit');
+              if (ld) ld.textContent = lastDigit !== null ? lastDigit : '-';
+            }
+
+            if (lastDigit !== null && lastDigit >= 0 && lastDigit <= 5) {
+              st.consecutiveInRange = (st.consecutiveInRange || 0) + 1;
+            } else {
+              st.consecutiveInRange = 0;
+              st.hasSignal = false;
+              if (box) {
+                box.classList.remove('has-signal');
+                const flag = box.querySelector('.signal-flag');
+                if (flag) flag.textContent = '';
+              }
+            }
+
+            if (st.consecutiveInRange >= 7 && !st.hasSignal) {
+              st.hasSignal = true;
+              triggerSignal(base, st.consecutiveInRange, lastDigit);
+            }
+          }
+
+          // main live quote + chart for selected market
+          if (symbolFull === document.getElementById('marketSelect').value) {
+            document.getElementById('liveQuote').textContent = `Quote: ${display}`;
+            if (lastDigit !== null) {
+              digitCounts[lastDigit] = (digitCounts[lastDigit] || 0) + 1;
+              percentChart.data.datasets[0].data = digitCounts;
+              percentChart.update();
+              document.getElementById('ldpIndicator').textContent = lastDigit;
+            }
+          }
+
+          return;
+        }
+
+        if (msg.buy) {
+          const cid = msg.buy.contract_id;
+          const t = new Date().toLocaleTimeString();
+          const row = document.createElement('tr');
+          row.id = `row-${cid}`;
+          row.innerHTML = `<td>${t}</td><td>${msg.echo_req.parameters.contract_type}</td><td>${msg.echo_req.price}</td><td id="status-${cid}">OPEN</td>`;
+          document.getElementById('tradeHistory').prepend(row);
+          ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id: cid, subscribe: 1 }));
+          return;
+        }
+
+        if (msg.proposal_open_contract) {
+          const c = msg.proposal_open_contract;
+          const row = document.getElementById(`row-${c.contract_id}`);
+          const st = document.getElementById(`status-${c.contract_id}`);
+          if (!row || !st) return;
+          if (c.status === 'won') {
+            row.className = 'win';
+            st.textContent = 'WON';
+            activeTrade = false;
+            updateMartingale(true);
+          } else if (c.status === 'lost') {
+            row.className = 'loss';
+            st.textContent = 'LOST';
+            activeTrade = false;
+            updateMartingale(false);
+          }
+          return;
+        }
+      };
+
+      document.getElementById('underBtn').onclick = () => placeTrade('DIGITUNDER');
+
+      // Market auto change every 5 minutes + different sound
+      setInterval(() => {
+        const select = document.getElementById('marketSelect');
+        if (!select || !select.options.length) return;
+        select.selectedIndex = (select.selectedIndex + 1) % select.options.length;
+        const psEl = document.getElementById('pauseStatus');
+        const txt = `🔄 Market auto-switched to ${select.value}`;
+        psEl.textContent = txt;
+        setTimeout(() => { if (psEl.textContent === txt) psEl.textContent = ''; }, 4000);
+        const marketSound = document.getElementById('marketChangeSound');
+        if (marketSound) marketSound.play();
+      }, 5 * 60 * 1000);
+    }
   </script>
 </body>
 </html>
