@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -121,7 +121,7 @@
         <label for="duration">Duration (ticks):</label>
         <select id="duration"></select>
         <label for="stake">Stake:</label>
-        <input type="number" id="stake" step="0.01" value="0.65" />
+        <input type="number" id="stake" step="0.01" value="1.6" />
         <label for="barrier">Barrier (0–9):</label>
         <input type="number" id="barrier" min="0" max="9" value="7" />
         <button id="underBtn">Under</button>
@@ -259,30 +259,17 @@
         }
       );
 
-      const martingalePlan = [
-        { stake: 0.65, digit: 7 },
-        { stake: 1.03, digit: 6 },
-        { stake: 2.65, digit: 6 },
-        { stake: 4.54, digit: 5 },
-        { stake: 6.95, digit: 5 },
-        { stake: 9.21, digit: 5 },
-        { stake: 11.55, digit: 5 },
-        { stake: 13.75, digit: 5 },
-        { stake: 14.55, digit: 5 },
-        { stake: 15.35, digit: 5 }
-      ];
+      // 🔁 අලුත් Martingale steps (stake values only)
+      const martingalePlan = [1.6, 2.6, 4.5, 6.5, 12.5];
 
       let currentStep = 0,
           consecutiveLosses = 0,
           consecutiveWins = 0,
-          pauseUntil = null,
-          thresholdPauseUntil = null,
-          profitReached = false,
-          lossReached = false;
+          pauseUntil = null;
 
       function shouldPause() {
         const now = Date.now();
-        return (pauseUntil && now < pauseUntil) || (thresholdPauseUntil && now < thresholdPauseUntil);
+        return pauseUntil && now < pauseUntil;
       }
 
       function setPause(mins) {
@@ -290,35 +277,9 @@
         document.getElementById('resumeBtn').style.display = 'inline-block';
       }
 
-      function hold24h() {
-        thresholdPauseUntil = Date.now() + 24 * 60 * 60000;
-        document.getElementById('underBtn').disabled = true;
-        document.getElementById('alarmDisplay').style.display = 'block';
-      }
-
       function showPauseCountdown() {
         const el = document.getElementById('pauseStatus');
         const now = Date.now();
-
-        if (thresholdPauseUntil) {
-          const left = thresholdPauseUntil - now;
-          if (left > 0) {
-            const h = Math.floor(left / 3600000);
-            const m = Math.floor((left % 3600000) / 60000);
-            const s = Math.floor((left % 60000) / 1000);
-            el.textContent = `⏸ Hold until ${h}h ${m}m ${s}s`;
-            return;
-          } else {
-            thresholdPauseUntil = null;
-            document.getElementById('underBtn').disabled = false;
-            document.getElementById('alarmDisplay').style.display = 'none';
-            el.textContent = '✅ Resumed after 24h';
-            setTimeout(() => (el.textContent = ''), 3000);
-            initialBalance = currentBalance;
-            profitReached = false;
-            lossReached = false;
-          }
-        }
 
         if (pauseUntil) {
           const left2 = pauseUntil - now;
@@ -362,9 +323,9 @@
           const mEl = document.getElementById('marketSelect');
           mEl.selectedIndex = (mEl.selectedIndex + 1) % mEl.options.length;
         }
-        const plan = martingalePlan[currentStep];
-        document.getElementById('stake').value = plan.stake;
-        document.getElementById('barrier').value = plan.digit;
+        const stakePlan = martingalePlan[currentStep];
+        document.getElementById('stake').value = stakePlan;
+        // barrier auto-change remove කරලා – user ට manually set කරන්න
       }
 
       function placeTrade(type) {
@@ -461,19 +422,7 @@
           document.getElementById('balance').innerText = currentBalance.toFixed(2);
           const profit = currentBalance - initialBalance;
           document.getElementById('profit').innerText = profit.toFixed(2);
-
-          if (!profitReached && profit / initialBalance >= 0.05) {
-            profitReached = true;
-            document.getElementById('alarmDisplay').textContent = 'You have earned 5% for today.';
-            hold24h();
-            document.getElementById('voiceUnder').play();
-          }
-          if (!lossReached && profit / initialBalance <= -0.25) {
-            lossReached = true;
-            document.getElementById('alarmDisplay').textContent = "Don't trade today.";
-            hold24h();
-            document.getElementById('voiceUnder').play();
-          }
+          // 🔕 5% / -25% daily lock + "Don't trade today" remove කරලා
           return;
         }
 
